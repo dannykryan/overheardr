@@ -1,0 +1,303 @@
+{
+  "video_id": "TtDMUz6TBIc",
+  "url": "https://www.youtube.com/watch?v=TtDMUz6TBIc",
+  "title": "Blood Incantation's \"What's In My Bag?\" | Amoeba Music",
+  "channel": "Amoeba",
+  "upload_date": "20221128",
+  "duration_seconds": 912,
+  "has_manual_captions": false,
+  "has_automatic_captions": false,
+  "notes": "Canonical acceptance list for phase 1. The 21 bag picks are listed in the YouTube description and should all appear on the review screen, in this order when possible. mentioned_only records are spoken or shown in the video but are not bag picks; the extractor may surface them if marked role=mention, but they must not be auto-ticked and must not be required for acceptance. Description list uses 'Karma Moffett - Sitting Still Within Sitting Still Without' (no slash); the jacket and transcript also use a slash. No YouTube captions were present when fixtures were captured (2026-11-22); ingest must therefore take the audio+faster-whisper path unless a later run finds captions.",
+  "bag_picks": [
+    {
+      "artist": "Fates Warning",
+      "album": "Perfect Symmetry",
+      "year": 1989,
+      "picked_by": "Isaac Faulk",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Bag pick (CD). Isaac also mentioned Parallels as the album from around the same time."
+    },
+    {
+      "artist": "Morbid Angel",
+      "album": "Formulas Fatal to the Flesh",
+      "year": 1998,
+      "picked_by": "Jeff Barrett",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Jeff said “1999”; on-screen graphic and standard discography are 1998. Do not reject a 1998 Spotify release."
+    },
+    {
+      "artist": "Wallenstein",
+      "album": "Mother Universe",
+      "year": 1972,
+      "picked_by": "Jeff Barrett",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "On Spotify as a remaster. Their second album, Pilz label."
+    },
+    {
+      "artist": "The Dave Brubeck Quartet",
+      "album": "Time Out",
+      "year": 1959,
+      "picked_by": "Morris Kolontyrsky",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Artist may also appear as Dave Brubeck. On-screen track: Take Five."
+    },
+    {
+      "artist": "Osamu Kitajima",
+      "album": "Behind The Light",
+      "year": 1991,
+      "picked_by": "Isaac Faulk",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Higher Octave US CD is often dated 1992 (HOMCD-7045). Year should not be a hard filter."
+    },
+    {
+      "artist": "Carlos Santana & John McLaughlin",
+      "album": "Love Devotion Surrender",
+      "year": 1973,
+      "picked_by": "Jeff Barrett",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Sometimes credited with the Mahavishnu Orchestra. Matcher must accept either artist credit."
+    },
+    {
+      "artist": "Bernard Xolotl",
+      "album": "Music By Xolotl",
+      "year": 1978,
+      "picked_by": "Paul Riedl",
+      "on_spotify": null,
+      "on_spotify_confidence": "unconfirmed",
+      "alternate_titles": [],
+      "notes": "UNCONFIRMED on Spotify. The artist is on Spotify; this exact 1978 cassette (Wah Wah reissue with bonus 7\") was not cheaply confirmed there and is available on Bandcamp. Tests must not fail the job if the matcher finds no acceptable album match. Do not invent a match to a different Xolotl release.",
+      "flags": [
+        "spotify_unconfirmed"
+      ]
+    },
+    {
+      "artist": "Steve Hillage",
+      "album": "Rainbow Dome Musick",
+      "year": 1979,
+      "picked_by": "Morris Kolontyrsky",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [
+        "Rainbow Dome Music"
+      ],
+      "notes": "Title is spelled Musick. Matcher should still find it if the transcript drops the k (it often does)."
+    },
+    {
+      "artist": "Abigor",
+      "album": "Leytmotif Luzifer",
+      "year": 2014,
+      "picked_by": "Isaac Faulk",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [
+        "Leytmotif Luzifer (The 7 Temptations of Man)"
+      ],
+      "notes": "Known Spotify album URI: 0D0xCqUDfhkLk4sKTOEiou. Transcript may garble this as 'late motif Lucifer' / 'Abigore'.",
+      "spotify_album_id_hint": "0D0xCqUDfhkLk4sKTOEiou"
+    },
+    {
+      "artist": "Tears For Fears",
+      "album": "The Seeds Of Love",
+      "year": 1989,
+      "picked_by": "Jeff Barrett",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Transcript may say 'two for fears'."
+    },
+    {
+      "artist": "Pauline Anna Strom",
+      "album": "Angel Tears In Sunlight",
+      "year": 2021,
+      "picked_by": "Paul Riedl",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Transcript may say 'Pauline Anastrom'. On-screen track Tropical Convergence (2020) is not the album title."
+    },
+    {
+      "artist": "Yukihiro Takahashi",
+      "album": "Tomorrow's Just Another Day",
+      "year": 1983,
+      "picked_by": "Morris Kolontyrsky",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [
+        "薔薇色の明日",
+        "Bara-iro no Ashita"
+      ],
+      "notes": "TRICKY MATCH. Listed on Spotify under the Japanese title 薔薇色の明日 (2022 Yoshinori Sunahara remaster), not the English title. The matcher must use the alternate/native title (from the LLM, a description hint, or MusicBrainz aliases) and accept that remaster as the Spotify release. Yen Records; fifth solo album, after Neuromantic.",
+      "flags": [
+        "native_title_on_spotify"
+      ]
+    },
+    {
+      "artist": "XTC",
+      "album": "English Settlement",
+      "year": 1982,
+      "picked_by": "Isaac Faulk",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": []
+    },
+    {
+      "artist": "Seatbelts",
+      "album": "Cowboy Bebop (Original Soundtrack)",
+      "year": 1998,
+      "picked_by": "Jeff Barrett",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [
+        "Cowboy Bebop",
+        "Cowboy Bebop [OST]",
+        "COWBOY BEBOP Original Soundtrack"
+      ],
+      "notes": "Description writes 'Seatbelts - Cowboy Bebop [OST]'. Streaming artist credit is often SEAT BELTS or Yoko Kanno & The Seatbelts. This is the 1998 anime OST, not the 2021 Netflix-series soundtrack. Matcher should prefer the 1998 OST."
+    },
+    {
+      "artist": "Karma Moffett",
+      "album": "Sitting Still Within / Sitting Still Without",
+      "year": 1982,
+      "picked_by": "Paul Riedl",
+      "on_spotify": false,
+      "on_spotify_confidence": "probable_absent",
+      "alternate_titles": [
+        "Sitting Still Within Sitting Still Without",
+        "Sitting Still Within, Sitting Still Without"
+      ],
+      "notes": "PROBABLY NOT ON SPOTIFY. Morning Trip reissue of the 1982 original. Title appears with and without a slash. Available on Bandcamp / Boomkat; Record Club listed no Spotify link. Review row must still appear, with cover art from MusicBrainz/Cover Art Archive if possible, checkbox disabled, and not included in the playlist. Tests should expect on_spotify=false; a surprise true match should be treated as a soft warning, not a hard failure.",
+      "flags": [
+        "probably_not_on_spotify"
+      ]
+    },
+    {
+      "artist": "Eurythmics",
+      "album": "In The Garden",
+      "year": 1981,
+      "picked_by": "Morris Kolontyrsky",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "2018 reissue mentioned; produced by Conny Plank. Transcript may say 'Connie Plank'."
+    },
+    {
+      "artist": "Gong",
+      "album": "Angel's Egg: Radio Gnome Invisible Part II",
+      "year": 1973,
+      "picked_by": "Isaac Faulk",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [
+        "Angel's Egg",
+        "Angels Egg"
+      ],
+      "notes": "Short title Angel's Egg is enough to match. Transcript may say 'a gong called angels egg'."
+    },
+    {
+      "artist": "Michael Stearns",
+      "album": "Planetary Unfolding",
+      "year": 1981,
+      "picked_by": "Jeff Barrett",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Transcript may say 'Michael Sterns'. A 2022 remaster is acceptable."
+    },
+    {
+      "artist": "Klaus Schulze",
+      "album": "Deus Arrakis",
+      "year": 2022,
+      "picked_by": "Morris Kolontyrsky",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Transcript often garbles this as 'Klaus Schultz' / 'deus erachis'."
+    },
+    {
+      "artist": "Eloy",
+      "album": "Metromania",
+      "year": 1984,
+      "picked_by": "Paul Riedl",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Transcript may say 'you lawyer' / 'Eloi' / 'Metro mania'. During this segment the video also shows Scorpions – Lonesome Crow, which is not a bag pick."
+    },
+    {
+      "artist": "Candlemass",
+      "album": "Epicus Doomicus Metallicus",
+      "year": 1986,
+      "picked_by": "Morris Kolontyrsky",
+      "on_spotify": true,
+      "on_spotify_confidence": "confirmed",
+      "alternate_titles": [],
+      "notes": "Transcript may say 'Kendall Nassau'. Peaceville box-set reissue; original studio album is the correct match."
+    }
+  ],
+  "mentioned_only": [
+    {
+      "artist": "Fates Warning",
+      "album": "Parallels",
+      "year": 1991,
+      "on_spotify": true,
+      "notes": "Mentioned only while presenting Perfect Symmetry. Not a bag pick."
+    },
+    {
+      "artist": "Blood Incantation",
+      "album": "Hidden History of the Human Race",
+      "year": 2019,
+      "on_spotify": true,
+      "notes": "Mentioned only. Their own album, cited as influenced by Perfect Symmetry."
+    },
+    {
+      "artist": "Blood Incantation",
+      "album": "Timewave Zero",
+      "year": 2022,
+      "on_spotify": true,
+      "notes": "Mentioned only (also in the video description blurb). Ambient EP/album."
+    },
+    {
+      "artist": "Yukihiro Takahashi",
+      "album": "Neuromantic",
+      "year": 1981,
+      "on_spotify": true,
+      "alternate_titles": [
+        "ニウロマンティック～ロマン神経症～"
+      ],
+      "notes": "Mentioned only as the album just before Tomorrow's Just Another Day. On Spotify under the Japanese title."
+    },
+    {
+      "artist": "Paul Riedl",
+      "album": "Ocean of Peace",
+      "year": 2023,
+      "on_spotify": true,
+      "notes": "Mentioned only. Then-upcoming first solo album (filmed 2022); released in 2023 as an EP. Karma Moffett did the artwork."
+    },
+    {
+      "artist": "Shinichiro Watanabe",
+      "album": "Cowboy Bebop (TV series)",
+      "year": 1998,
+      "on_spotify": false,
+      "notes": "Mentioned only. Anime/TV series, not an album. Do not add this as an album row."
+    },
+    {
+      "artist": "Scorpions",
+      "album": "Lonesome Crow",
+      "year": 1972,
+      "on_spotify": true,
+      "notes": "Shown/mentioned only during the Eloy segment (medium confidence in the transcript). Not a bag pick."
+    }
+  ]
+}

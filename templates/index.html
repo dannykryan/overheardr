@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main>
+    <h1>{{ title }}</h1>
+    <p>Paste a YouTube URL to extract albums and build a Spotify playlist.</p>
+    {% if not spotify_connected %}
+    <p class="note">Spotify is not connected yet. You will be prompted to log in before creating a playlist.</p>
+    {% endif %}
+    <form action="#" method="post" hx-disabled>
+      <label for="url">YouTube URL</label>
+      <input type="url" id="url" name="url" placeholder="https://www.youtube.com/watch?v=…" disabled>
+      <button type="submit" disabled>Submit (coming soon)</button>
+    </form>
+  </main>
+</body>
+</html>
