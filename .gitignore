@@ -1,0 +1,35 @@
+# Environment and secrets
+.env
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.Python
+
+# Data and caches (never commit audio, weights, or tokens)
+/data/
+*.db
+*.sqlite3
+.cache/
+whisper-models/
+ollama-models/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/

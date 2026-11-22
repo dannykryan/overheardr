@@ -1,0 +1,31 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 40rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+.note {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+form label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+form input[type="url"] {
+  width: 100%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+form button {
+  margin-top: 0.75rem;
+}
