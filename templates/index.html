@@ -8,16 +8,18 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <main>
+  <main class="container">
     <h1>{{ title }}</h1>
     <p>Paste a YouTube URL to extract albums and build a Spotify playlist.</p>
-    {% if not spotify_connected %}
-    <p class="note">Spotify is not connected yet. You will be prompted to log in before creating a playlist.</p>
+    {% if spotify_connected %}
+    <p class="note spotify-ok">Spotify connected{% if spotify_display_name %} as {{ spotify_display_name }}{% endif %}.</p>
+    {% else %}
+    <p class="note">Spotify is not connected yet. You will log in before creating a playlist.</p>
     {% endif %}
-    <form action="#" method="post" hx-disabled>
+    <form action="/" method="post">
       <label for="url">YouTube URL</label>
-      <input type="url" id="url" name="url" placeholder="https://www.youtube.com/watch?v=…" disabled>
-      <button type="submit" disabled>Submit (coming soon)</button>
+      <input type="url" id="url" name="url" required placeholder="https://www.youtube.com/watch?v=…">
+      <button type="submit">Analyze video</button>
     </form>
   </main>
 </body>

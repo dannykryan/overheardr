@@ -2,7 +2,7 @@
 
 Convert YouTube videos (for example band “What’s In My Bag?” clips) into private Spotify playlists. Paste a URL, review extracted albums, and create a playlist with every track from the albums you keep.
 
-Phase 1 is **Spotify-only**: a “Download from Soulseek” control is visible but disabled. See [docs/SPEC.md](docs/SPEC.md) and [docs/AGENT_BRIEF.md](docs/AGENT_BRIEF.md) for full architecture and milestones.
+Phase 1 is **Spotify-only**: a “Download from Soulseek” control is visible but disabled (phase 2 will integrate [slskd](https://github.com/slskd/slskd); see [docs/SPEC.md](docs/SPEC.md) §15). See [docs/AGENT_BRIEF.md](docs/AGENT_BRIEF.md) for milestones.
 
 ## Requirements
 
@@ -99,5 +99,5 @@ tests/         pytest suite
 
 ## Milestone status
 
-- **M1 (scaffold + Docker):** health endpoint, placeholder home page, Compose stack with Ollama + model pull
-- **M2–M7:** ingest, extraction, Spotify match, review UI, playlist PKCE, Soulseek stub — not yet implemented
+- **M1–M4:** scaffold, ingest, extraction, Spotify matching — done
+- **M5–M7:** review UI (HTMX), Spotify PKCE playlist creation, Soulseek button stub — done

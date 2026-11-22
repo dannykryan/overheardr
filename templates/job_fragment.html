@@ -1,0 +1,147 @@
+{% set running = job.status in ['queued', 'fetching', 'transcribing', 'extracting', 'matching', 'creating_playlist'] %}
+{% if not running %}
+<div id="job-root" hx-swap-oob="true" hx-get="/jobs/{{ job.id }}/fragment" hx-trigger="none"></div>
+{% endif %}
+
+{% if job.status == 'error' %}
+<section class="banner error">
+  <strong>Error</strong>
+  <p>{{ job.error_message or 'Something went wrong.' }}</p>
+</section>
+{% elif running %}
+<section class="progress">
+  <h1>Processing…</h1>
+  <p class="status-label">{{ job.status | replace('_', ' ') | title }}</p>
+  {% if job.status_detail %}<p class="muted">{{ job.status_detail }}</p>{% endif %}
+</section>
+{% else %}
+<header class="video-header">
+  {% if video and video.thumbnail_url %}
+  <img class="thumb" src="{{ video.thumbnail_url }}" alt="" width="160" height="90">
+  {% endif %}
+  <div>
+    <h1>{{ video.title if video else 'Review albums' }}</h1>
+    {% if video %}
+    <p class="muted">{{ video.channel }}{% if video.duration_seconds %} · {{ (video.duration_seconds // 60) }} min{% endif %}</p>
+    {% endif %}
+    {% if transcript %}
+    <p class="muted">Transcript: {{ transcript.source }}{% if transcript.model %} ({{ transcript.model }}){% endif %}</p>
+    {% endif %}
+  </div>
+</header>
+
+{% if job.warnings %}
+<section class="banner warn">
+  <strong>Warnings</strong>
+  <ul>
+    {% for w in job.warnings %}<li>{{ w }}</li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if job.playlist_url %}
+<section class="banner success">
+  <strong>Playlist created</strong>
+  <p><a href="{{ job.playlist_url }}" target="_blank" rel="noopener">{{ job.playlist_name or 'Open in Spotify' }}</a></p>
+</section>
+{% endif %}
+
+<section class="review">
+  <h2>Albums ({{ bag_picks|length }} picks)</h2>
+  <table class="album-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Album</th>
+        <th>Artist</th>
+        <th>Year</th>
+        <th>Spotify</th>
+        <th>Include</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in bag_picks %}
+      <tr class="{% if not row.on_spotify %}off-spotify{% endif %}">
+        <td class="cover-cell">
+          {% if row.cover_url %}
+          <img src="{{ row.cover_url }}" alt="" class="cover" width="48" height="48">
+          {% else %}
+          <span class="cover cover-placeholder">—</span>
+          {% endif %}
+        </td>
+        <td>{{ row.spotify_album_name or row.album }}</td>
+        <td>{{ row.spotify_artist_name or row.artist }}</td>
+        <td>{{ row.year or '—' }}</td>
+        <td>
+          {% if row.on_spotify %}
+          <span class="badge ok">On Spotify</span>
+          {% else %}
+          <span class="badge no">Not on Spotify</span>
+          {% endif %}
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            name="selected"
+            {% if row.selected %}checked{% endif %}
+            {% if not row.on_spotify %}disabled{% endif %}
+            hx-ext="json-enc"
+            hx-patch="/api/jobs/{{ job.id }}/albums/{{ row.id }}"
+            hx-vals='js:{selected: event.target.checked}'
+            hx-swap="none"
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if mentions %}
+  <details class="mentions">
+    <summary>Mentions ({{ mentions|length }})</summary>
+    <table class="album-table compact">
+      <tbody>
+        {% for row in mentions %}
+        <tr>
+          <td>{{ row.artist }} — {{ row.album }}</td>
+          <td>
+            <input
+              type="checkbox"
+              {% if row.selected %}checked{% endif %}
+              {% if not row.on_spotify %}disabled{% endif %}
+              hx-ext="json-enc"
+              hx-patch="/api/jobs/{{ job.id }}/albums/{{ row.id }}"
+              hx-vals='js:{selected: event.target.checked}'
+              hx-swap="none"
+            >
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% endif %}
+</section>
+
+<section class="actions">
+  <form
+    id="playlist-form"
+    hx-post="/api/jobs/{{ job.id }}/playlist"
+    hx-ext="json-enc"
+    hx-target="#playlist-result"
+    hx-swap="innerHTML"
+  >
+    <label for="playlist-name">Playlist name</label>
+    <input type="text" id="playlist-name" name="name" value="{{ playlist_default }}" required>
+
+    {% if spotify_connected %}
+    <button type="submit" class="primary">Create Spotify playlist</button>
+    {% else %}
+    <a class="button primary" href="/auth/spotify/login?return_to=/jobs/{{ job.id }}">Log in to Spotify, then create playlist</a>
+    {% endif %}
+
+    <button type="button" class="secondary" disabled title="Coming later — Soulseek downloads ship in phase 2 (see docs/SPEC.md §15)">Download from Soulseek</button>
+  </form>
+  <div id="playlist-result"></div>
+</section>
+{% endif %}

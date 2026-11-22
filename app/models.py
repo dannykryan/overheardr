@@ -136,6 +136,32 @@ class AlbumRowModel(Base):
         self.sources_json = json.dumps(items)
 
 
+class SpotifySessionModel(Base):
+    """Single-user Spotify OAuth session (SPEC §4)."""
+
+    __tablename__ = "spotify_sessions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
+    access_token: Mapped[str | None] = mapped_column(Text, nullable=True)
+    refresh_token: Mapped[str | None] = mapped_column(Text, nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    display_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    user_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
+
+class OAuthStateModel(Base):
+    """Pending PKCE OAuth state (verifier stored server-side, never logged)."""
+
+    __tablename__ = "oauth_states"
+
+    state: Mapped[str] = mapped_column(String(64), primary_key=True)
+    code_verifier: Mapped[str] = mapped_column(Text, nullable=False)
+    return_to: Mapped[str] = mapped_column(Text, nullable=False, default="/")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+
 class SearchCacheModel(Base):
     __tablename__ = "search_cache"
 
