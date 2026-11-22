@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from app.api.jobs import router as jobs_router
 from app.database import init_storage
 
 
@@ -23,6 +24,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.include_router(jobs_router)
 
 _static = Path(__file__).resolve().parent.parent / "static"
 if _static.is_dir():
