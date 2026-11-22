@@ -80,7 +80,20 @@ class JobDetailOut(BaseModel):
     video: VideoOut | None = None
     transcript: TranscriptOut | None = None
     albums: list[AlbumRowOut] = Field(default_factory=list)
+    playlist_id: str | None = None
+    playlist_url: str | None = None
+    playlist_name: str | None = None
 
 
 class PatchAlbumRequest(BaseModel):
     selected: bool
+
+
+class CreatePlaylistRequest(BaseModel):
+    name: str
+
+
+class CreatePlaylistResponse(BaseModel):
+    playlist_id: str
+    playlist_url: str
+    track_count: int

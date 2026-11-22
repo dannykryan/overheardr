@@ -3,13 +3,13 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
+from app.api.auth import router as auth_router
 from app.api.jobs import router as jobs_router
 from app.database import init_storage
+from app.web import router as web_router
 
 
 @asynccontextmanager
@@ -26,28 +26,15 @@ app = FastAPI(
 )
 
 app.include_router(jobs_router)
+app.include_router(auth_router)
+app.include_router(web_router)
 
 _static = Path(__file__).resolve().parent.parent / "static"
 if _static.is_dir():
     app.mount("/static", StaticFiles(directory=str(_static)), name="static")
-
-templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/health")
 def health() -> dict[str, str]:
     """Liveness/readiness probe for Docker and native runs."""
     return {"status": "ok"}
-
-
-@app.get("/", response_class=HTMLResponse)
-def index(request: Request) -> HTMLResponse:
-    """Placeholder home page — URL form ships in a later milestone."""
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={
-            "title": "overheardr",
-            "spotify_connected": False,
-        },
-    )

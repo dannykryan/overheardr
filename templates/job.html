@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job {{ job_id[:8] }}… — overheardr</title>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script src="https://unpkg.com/htmx-ext-json-enc@2.0.0/json-enc.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="container">
+    <p class="back"><a href="/">← New video</a></p>
+    <div
+      id="job-root"
+      hx-get="/jobs/{{ job_id }}/fragment"
+      hx-trigger="load{% if poll %}, every 2s{% endif %}"
+      hx-swap="innerHTML"
+    >
+      <p class="loading">Loading…</p>
+    </div>
+  </main>
+</body>
+</html>

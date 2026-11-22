@@ -6,10 +6,14 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from app.models import AlbumRowModel, JobModel, SessionLocal, TranscriptModel, VideoModel
 from app.pipeline import run_pipeline
+from app.spotify_auth import get_valid_access_token
+from app.spotify_playlist import build_client_from_session, create_job_playlist
 from app.schemas import (
     AlbumRowOut,
     CreateJobRequest,
     CreateJobResponse,
+    CreatePlaylistRequest,
+    CreatePlaylistResponse,
     JobDetailOut,
     JobStatus,
     PatchAlbumRequest,
@@ -110,7 +114,40 @@ def get_job(job_id: str) -> JobDetailOut:
             video=video_out,
             transcript=transcript_out,
             albums=albums,
+            playlist_id=job.playlist_id,
+            playlist_url=job.playlist_url,
+            playlist_name=job.playlist_name,
         )
+
+
+@router.post("/{job_id}/playlist", response_model=CreatePlaylistResponse)
+def create_playlist(job_id: str, body: CreatePlaylistRequest) -> CreatePlaylistResponse:
+    if not get_valid_access_token():
+        raise HTTPException(status_code=401, detail="Spotify login required")
+
+    with SessionLocal() as session:
+        job = session.get(JobModel, job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        if job.status not in ("ready", "done"):
+            raise HTTPException(status_code=409, detail="Job is not ready for playlist creation")
+
+    name = body.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Playlist name is required")
+
+    try:
+        result = create_job_playlist(job_id, name)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+    return CreatePlaylistResponse(
+        playlist_id=result.playlist_id,
+        playlist_url=result.playlist_url,
+        track_count=result.track_count,
+    )
 
 
 @router.patch("/{job_id}/albums/{album_id}", response_model=AlbumRowOut)
