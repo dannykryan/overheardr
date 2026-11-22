@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from app.models import AlbumRowModel, JobModel, SessionLocal, TranscriptModel, VideoModel
-from app.pipeline import run_pipeline
+from app.pipeline import rematch_spotify, run_pipeline
 from app.spotify_auth import get_valid_access_token
 from app.spotify_playlist import build_client_from_session, create_job_playlist
 from app.schemas import (
@@ -148,6 +148,22 @@ def create_playlist(job_id: str, body: CreatePlaylistRequest) -> CreatePlaylistR
         playlist_url=result.playlist_url,
         track_count=result.track_count,
     )
+
+
+@router.post("/{job_id}/rematch", response_model=JobDetailOut)
+def rematch_job(job_id: str, background_tasks: BackgroundTasks) -> JobDetailOut:
+    if not get_valid_access_token():
+        raise HTTPException(status_code=401, detail="Spotify login required to rematch")
+
+    with SessionLocal() as session:
+        job = session.get(JobModel, job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        if job.status not in ("ready", "done"):
+            raise HTTPException(status_code=409, detail="Job is not ready for rematch")
+
+    background_tasks.add_task(rematch_spotify, job_id, get_services())
+    return get_job(job_id)
 
 
 @router.patch("/{job_id}/albums/{album_id}", response_model=AlbumRowOut)

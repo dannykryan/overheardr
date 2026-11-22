@@ -16,6 +16,16 @@ FIXTURE_DIR = REPO_ROOT / "fixtures" / FIXTURE_VIDEO_ID
 
 
 @pytest.fixture(autouse=True)
+def offline_musicbrainz(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.musicbrainz import MusicBrainzClient
+
+    def _noop_api_lookup(self, artist: str, album: str) -> dict:
+        return {}
+
+    monkeypatch.setattr(MusicBrainzClient, "_api_lookup", _noop_api_lookup)
+
+
+@pytest.fixture(autouse=True)
 def isolated_data_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     data = tmp_path / "data"
     data.mkdir()
