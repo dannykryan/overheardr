@@ -36,7 +36,22 @@
   <ul>
     {% for w in job.warnings %}<li>{{ w }}</li>{% endfor %}
   </ul>
+  {% if not spotify_connected %}
+  <p><a href="/auth/spotify/login?return_to=/jobs/{{ job.id }}%3Fresume%3Drematch">Log in to Spotify</a> to search for matches.</p>
+  {% endif %}
 </section>
+{% endif %}
+
+{% if spotify_connected and job.status in ['ready', 'done'] %}
+<p class="rematch-row">
+  <button
+    type="button"
+    class="secondary"
+    hx-post="/api/jobs/{{ job.id }}/rematch"
+    hx-swap="none"
+    hx-on::after-request="htmx.trigger('#job-root', 'htmx:load')"
+  >Re-match albums on Spotify</button>
+</p>
 {% endif %}
 
 {% if job.playlist_url %}
@@ -137,7 +152,7 @@
     {% if spotify_connected %}
     <button type="submit" class="primary">Create Spotify playlist</button>
     {% else %}
-    <a class="button primary" href="/auth/spotify/login?return_to=/jobs/{{ job.id }}">Log in to Spotify, then create playlist</a>
+    <a class="button primary" href="/auth/spotify/login?return_to=/jobs/{{ job.id }}%3Fresume%3Dplaylist">Log in to Spotify, then create playlist</a>
     {% endif %}
 
     <button type="button" class="secondary" disabled title="Coming later — Soulseek downloads ship in phase 2 (see docs/SPEC.md §15)">Download from Soulseek</button>

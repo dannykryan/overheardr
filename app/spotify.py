@@ -2,8 +2,9 @@
 
 import json
 import logging
+import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import httpx
 from rapidfuzz import fuzz
@@ -12,6 +13,7 @@ from app.config import settings
 from app.extraction_types import ExtractedAlbum
 from app.models import SearchCacheModel, SessionLocal
 from app.normalize import normalize
+from app.spotify_auth import get_valid_access_token
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,7 @@ class SpotifyMatch:
     spotify_artist_name: str | None = None
     match_score: float | None = None
     cover_url: str | None = None
+    unavailable_reason: str | None = None
 
 
 @dataclass
@@ -119,18 +122,19 @@ def _parse_spotify_items(items: list[dict[str, Any]]) -> list[SpotifySearchHit]:
 
 
 class SpotifyClient:
-    """Search Spotify Web API (client credentials or injected responses)."""
+    """Search Spotify Web API with the PKCE user token or injected responses."""
 
     def __init__(
         self,
         client: httpx.Client | None = None,
-        client_id: str | None = None,
         search_fn: Any | None = None,
+        access_token: str | None = None,
+        token_getter: Callable[[], str | None] | None = None,
     ):
         self._client = client or httpx.Client(timeout=30.0)
-        self._client_id = client_id if client_id is not None else settings.spotify_client_id
         self._search_fn = search_fn
-        self._token: str | None = None
+        self._access_token = access_token
+        self._token_getter = token_getter or get_valid_access_token
 
     def search(self, query: str, limit: int = 10) -> list[SpotifySearchHit]:
         cache_key = f"spotify:{normalize(query)}"
@@ -152,34 +156,33 @@ class SpotifyClient:
             _cache_set(cache_key, hits)
             return hits
 
-        if not self._client_id:
+        token = self._user_access_token()
+        if not token:
             return []
 
-        items = self._api_search(query, limit=limit)
+        items = self._api_search(query, limit=limit, token=token)
         hits = _parse_spotify_items(items)
         _cache_set(cache_key, hits)
         return hits
 
-    def _api_search(self, query: str, limit: int) -> list[dict[str, Any]]:
-        token = self._get_client_credentials_token()
-        if not token:
-            return []
-        resp = self._client.get(
-            f"{SPOTIFY_API}/search",
-            params={"q": query, "type": "album", "limit": limit},
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        if resp.status_code == 429:
-            retry = int(resp.headers.get("Retry-After", "1"))
-            logger.warning("Spotify 429; retry after %s", retry)
-            return []
-        resp.raise_for_status()
-        return resp.json().get("albums", {}).get("items", [])
+    def _user_access_token(self) -> str | None:
+        if self._access_token:
+            return self._access_token
+        return self._token_getter()
 
-    def _get_client_credentials_token(self) -> str | None:
-        if self._token:
-            return self._token
-        return None
+    def _api_search(self, query: str, limit: int, token: str) -> list[dict[str, Any]]:
+        url = f"{SPOTIFY_API}/search"
+        params = {"q": query, "type": "album", "limit": limit}
+        headers = {"Authorization": f"Bearer {token}"}
+        while True:
+            resp = self._client.get(url, params=params, headers=headers)
+            if resp.status_code == 429:
+                wait = int(resp.headers.get("Retry-After", "1"))
+                logger.warning("Spotify search 429; sleeping %ss", wait)
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            return resp.json().get("albums", {}).get("items", [])
 
 
 def _year_bonus(hit_year: str, want_year: int | None) -> float:

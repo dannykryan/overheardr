@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from app.extraction_types import ExtractedAlbum
 from app.ingest import (
     TranscriptResult,
+    download_captions,
     load_cached_transcript,
     load_fixture_transcript,
     save_transcript_cache,
@@ -18,7 +19,13 @@ from app.ollama_client import OllamaError, extract_from_transcript_sync
 from app.parser import parse_description
 from app.services import PipelineServices, get_services
 from app.spotify import SpotifyClient, SpotifyMatch, match_album, match_with_canned_responses
+from app.spotify_auth import get_valid_access_token
 from app.youtube import validate_youtube_url
+
+SPOTIFY_LOGIN_WARNING = (
+    "Spotify is not connected; album matches were not searched. "
+    "Log in to Spotify, then use Rematch on this page."
+)
 
 logger = logging.getLogger(__name__)
 
@@ -89,40 +96,66 @@ def _extracted_to_row(
         match_score=match.match_score,
         cover_url=cover,
         musicbrainz_release_group_id=mb_id,
-        unavailable_reason=None if on_sp else "No confident Spotify match",
+        unavailable_reason=(
+            None
+            if on_sp
+            else (match.unavailable_reason or "No confident Spotify match")
+        ),
     )
     row.set_alternate_titles(ext.alternate_titles)
     row.set_sources(ext.sources)
     return row
 
 
+def _spotify_client_for_services(services: PipelineServices) -> SpotifyClient | None:
+    if services.spotify_responses:
+        return None
+    if services.spotify_client:
+        return services.spotify_client
+    token = get_valid_access_token()
+    if token:
+        return SpotifyClient(access_token=token)
+    return SpotifyClient()
+
+
 def _match_rows(
     merged: list[ExtractedAlbum],
     services: PipelineServices,
+    *,
+    spotify_skipped: bool = False,
 ) -> list[AlbumRowModel]:
     mb = services.musicbrainz_client or MusicBrainzClient()
+    spotify = _spotify_client_for_services(services)
+    skip_reason = (
+        "Spotify login required to search"
+        if spotify_skipped
+        else None
+    )
     rows: list[AlbumRowModel] = []
+
+    def _no_session_match() -> SpotifyMatch:
+        return SpotifyMatch(on_spotify=False, unavailable_reason=skip_reason)
 
     for i, ext in enumerate(merged):
         if services.spotify_responses:
             match = match_with_canned_responses(ext, services.spotify_responses)
-        elif services.spotify_client:
-            match = match_album(ext, services.spotify_client)
+        elif spotify_skipped:
+            match = _no_session_match()
+        elif spotify:
+            match = match_album(ext, spotify)
         else:
-            match = match_album(ext, SpotifyClient())
+            match = _no_session_match()
 
         aliases, rg_id, cover = mb.release_group_aliases(ext.artist, ext.album)
         for alias in aliases:
             if alias not in ext.alternate_titles:
                 ext.alternate_titles.append(alias)
 
-        if not match.on_spotify and aliases:
+        if not match.on_spotify and aliases and not spotify_skipped:
             if services.spotify_responses:
                 match = match_with_canned_responses(ext, services.spotify_responses)
-            elif services.spotify_client:
-                match = match_album(ext, services.spotify_client)
-            else:
-                match = match_album(ext, SpotifyClient())
+            elif spotify:
+                match = match_album(ext, spotify)
 
         rows.append(_extracted_to_row(ext, i, match, mb_cover=cover, mb_id=rg_id))
     return rows
@@ -176,7 +209,10 @@ def run_pipeline(job_id: str, services: PipelineServices | None = None) -> None:
                 transcript = load_fixture_transcript(services.fixture_dir, video_id)
                 save_transcript_cache(video_id, transcript)
             elif meta.has_captions:
-                transcript = TranscriptResult(source="captions", text="")
+                if services.caption_fn:
+                    transcript = services.caption_fn(video_id, url, meta.info)
+                else:
+                    transcript = download_captions(video_id, url, meta.info)
             elif services.skip_transcribe:
                 raise RuntimeError("Transcript required but transcribe skipped")
             else:
@@ -226,7 +262,10 @@ def run_pipeline(job_id: str, services: PipelineServices | None = None) -> None:
         merged = merge_albums(desc_albums, llm_albums)
 
         _set_status(job_id, "matching", "Spotify and covers")
-        rows = _match_rows(merged, services)
+        spotify_skipped = not services.spotify_responses and not get_valid_access_token()
+        if spotify_skipped and not services.spotify_client:
+            _add_warning(job_id, SPOTIFY_LOGIN_WARNING)
+        rows = _match_rows(merged, services, spotify_skipped=spotify_skipped)
         _save_albums(job_id, rows)
         _set_status(job_id, "ready", "Review")
 
@@ -244,3 +283,48 @@ def _save_albums(job_id: str, rows: list[AlbumRowModel]) -> None:
             row.job_id = job_id
             session.add(row)
         session.commit()
+
+
+def _rows_to_extracted(job_id: str) -> list[ExtractedAlbum]:
+    with SessionLocal() as session:
+        job = session.get(JobModel, job_id)
+        if not job:
+            return []
+        return [
+            ExtractedAlbum(
+                artist=row.artist,
+                album=row.album,
+                year=row.year,
+                alternate_titles=list(row.alternate_titles),
+                role=row.role,  # type: ignore[arg-type]
+                confidence=row.confidence,  # type: ignore[arg-type]
+                sources=list(row.sources),  # type: ignore[arg-type]
+                evidence=row.evidence,
+                speaker=row.speaker,
+            )
+            for row in sorted(job.albums, key=lambda r: r.sort_order)
+        ]
+
+
+def rematch_spotify(job_id: str, services: PipelineServices | None = None) -> None:
+    """Re-run Spotify matching for a ready job (after PKCE login)."""
+    services = services or get_services()
+    token = get_valid_access_token()
+    if not token and not services.spotify_responses and not services.spotify_client:
+        _add_warning(job_id, SPOTIFY_LOGIN_WARNING)
+        return
+
+    merged = _rows_to_extracted(job_id)
+    if not merged:
+        return
+
+    _set_status(job_id, "matching", "Re-matching with Spotify")
+    rows = _match_rows(merged, services, spotify_skipped=False)
+    with SessionLocal() as session:
+        job = session.get(JobModel, job_id)
+        if job:
+            warnings = [w for w in job.warnings if w != SPOTIFY_LOGIN_WARNING]
+            job.set_warnings(warnings)
+            session.commit()
+    _save_albums(job_id, rows)
+    _set_status(job_id, "ready", "Review")

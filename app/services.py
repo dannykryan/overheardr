@@ -4,12 +4,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
-from app.ingest import VideoMetadata, fetch_metadata_from_fixture, fetch_metadata_ytdlp
+from app.ingest import TranscriptResult, VideoMetadata, fetch_metadata_from_fixture, fetch_metadata_ytdlp
 from app.musicbrainz import MusicBrainzClient
 from app.spotify import SpotifyClient
 
 
 MetadataFn = Callable[[str, str], VideoMetadata]
+CaptionFn = Callable[[str, str, dict], TranscriptResult]
 
 
 @dataclass
@@ -18,6 +19,7 @@ class PipelineServices:
     fixture_dir: Path | None = None
     fixture_description: str | None = None
     skip_transcribe: bool = False
+    caption_fn: CaptionFn | None = None
     spotify_client: SpotifyClient | None = None
     spotify_responses: dict[str, list[dict[str, Any]]] | None = None
     musicbrainz_client: MusicBrainzClient | None = None

@@ -91,6 +91,7 @@ def job_page(request: Request, job_id: str) -> HTMLResponse:
     status = spotify_auth.session_status()
     poll = job.status in _RUNNING
     playlist_default = _default_playlist_name(job) if job.status == "ready" else ""
+    resume = request.query_params.get("resume")
 
     return templates.TemplateResponse(
         request=request,
@@ -101,6 +102,7 @@ def job_page(request: Request, job_id: str) -> HTMLResponse:
             "spotify_connected": status["connected"],
             "spotify_display_name": status.get("display_name"),
             "playlist_default": playlist_default,
+            "resume": resume if status["connected"] else None,
         },
     )
 

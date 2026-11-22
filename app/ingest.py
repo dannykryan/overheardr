@@ -223,3 +223,99 @@ def deno_available() -> bool:
         return True
     except (subprocess.SubprocessError, FileNotFoundError):
         return False
+
+
+def _pick_subtitle_lang(info: dict[str, Any]) -> tuple[str, bool] | None:
+    """Prefer manual subs over auto; prefer video language then English."""
+    manual = info.get("subtitles") or {}
+    auto = info.get("automatic_captions") or {}
+    preferred_langs: list[str] = []
+    lang = info.get("language")
+    if lang:
+        preferred_langs.append(lang)
+    preferred_langs.extend(["en", "en-US", "en-GB"])
+
+    for lang_code in preferred_langs:
+        if lang_code in manual:
+            return lang_code, False
+    for lang_code in preferred_langs:
+        if lang_code in auto:
+            return lang_code, True
+    if manual:
+        key = next(iter(manual))
+        return key, False
+    if auto:
+        key = next(iter(auto))
+        return key, True
+    return None
+
+
+def _vtt_to_text(raw: str) -> str:
+    lines: list[str] = []
+    last = ""
+    for line in raw.splitlines():
+        text = line.strip()
+        if not text or text.upper().startswith("WEBVTT"):
+            continue
+        if "-->" in text or text.isdigit():
+            continue
+        if text.startswith("NOTE") or text.startswith("STYLE") or text.startswith("REGION"):
+            continue
+        if text.startswith("Kind:") or text.startswith("Language:"):
+            continue
+        text = _strip_vtt_tags(text)
+        if text and text != last:
+            lines.append(text)
+            last = text
+    return "\n".join(lines)
+
+
+def _strip_vtt_tags(text: str) -> str:
+    import re
+
+    return re.sub(r"<[^>]+>", "", text).strip()
+
+
+def download_captions(video_id: str, url: str, info: dict[str, Any] | None = None) -> TranscriptResult:
+    """Download and normalise YouTube captions via yt-dlp."""
+    import yt_dlp
+
+    cache = _video_cache_dir(video_id)
+    picked = _pick_subtitle_lang(info) if info else None
+
+    ydl_opts: dict[str, Any] = {
+        "skip_download": True,
+        "writesubtitles": True,
+        "writeautomaticsub": True,
+        "subtitlesformat": "vtt/best",
+        "remote_components": YTDLP_REMOTE_COMPONENTS,
+        "outtmpl": str(cache / f"{video_id}"),
+        "quiet": True,
+        "no_warnings": True,
+    }
+    if picked:
+        lang, automatic = picked
+        ydl_opts["subtitleslangs"] = [lang]
+        ydl_opts["writeautomaticsub"] = automatic
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+
+    vtt_paths = list(cache.glob(f"{video_id}*.vtt")) + list(cache.glob("*.vtt"))
+    if not vtt_paths:
+        raise RuntimeError("Captions were reported but no subtitle file was downloaded")
+
+    raw = vtt_paths[0].read_text(encoding="utf-8", errors="replace")
+    text = _vtt_to_text(raw)
+    if not text.strip():
+        raise RuntimeError("Downloaded captions contained no text")
+
+    timed = raw if len(raw) < 500_000 else None
+    result = TranscriptResult(
+        source="captions",
+        text=text,
+        timed_text=timed,
+        language=picked[0] if picked else None,
+    )
+    save_transcript_cache(video_id, result)
+    return result

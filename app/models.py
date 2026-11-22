@@ -1,6 +1,8 @@
 """SQLAlchemy models (SPEC §4)."""
 
 import json
+import os
+import stat
 import uuid
 from datetime import datetime, timezone
 
@@ -180,6 +182,13 @@ _engine = create_engine(
 SessionLocal = sessionmaker(bind=_engine, autoflush=False, autocommit=False)
 
 
+def _restrict_db_permissions() -> None:
+    db_path = settings.data_dir / "overheardr.db"
+    if db_path.exists():
+        os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)
+
+
 def init_db() -> None:
     settings.data_dir.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(_engine)
+    _restrict_db_permissions()

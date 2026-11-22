@@ -20,5 +20,27 @@
       <p class="loading">Loading…</p>
     </div>
   </main>
+  {% if resume and spotify_connected %}
+  <script>
+    (function () {
+      const resume = {{ resume | tojson }};
+      if (resume === "playlist") {
+        document.body.addEventListener("htmx:afterSettle", function () {
+          const form = document.getElementById("playlist-form");
+          if (form) form.requestSubmit();
+        }, { once: true });
+      } else if (resume === "rematch") {
+        htmx.ajax("POST", "/api/jobs/{{ job_id }}/rematch", { swap: "none" }).then(function () {
+          htmx.trigger("#job-root", "htmx:load");
+        });
+      }
+      if (window.history.replaceState) {
+        const u = new URL(window.location.href);
+        u.searchParams.delete("resume");
+        window.history.replaceState({}, "", u.pathname + u.search);
+      }
+    })();
+  </script>
+  {% endif %}
 </body>
 </html>
